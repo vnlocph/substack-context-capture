@@ -1,5 +1,7 @@
 # Substack Context Capture
 
+> 🇬🇧 English · [🇻🇳 Tiếng Việt](README.vi.md)
+
 A Chrome Manifest V3 extension that turns a Substack post plus manually selected discussion threads into a structured research package for humans and LLMs.
 
 The MVP intentionally contains **no AI integration and no crawler**. Collection is user-initiated: save the article, then select only the discussion branches worth preserving.
