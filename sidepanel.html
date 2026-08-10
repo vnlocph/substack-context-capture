@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Substack Context Capture</title>
   <link rel="stylesheet" href="sidepanel.css" />
+  <link rel="stylesheet" href="note-multi-picker.css" />
 </head>
 <body>
   <main class="app">
@@ -17,50 +18,44 @@
     </header>
 
     <section class="card current-card">
-      <div class="card-heading">
-        <div>
-          <p class="label">Trang hiện tại</p>
-          <h2 id="currentTitle">Mở một bài viết Substack</h2>
-        </div>
-      </div>
+      <div class="card-heading"><div><p class="label">Trang hiện tại</p><h2 id="currentTitle">Mở một bài viết Substack</h2></div></div>
       <p id="currentUrl" class="url">—</p>
       <div id="currentStats" class="stats hidden"></div>
       <div class="actions primary-actions">
         <button id="saveArticleBtn" class="button primary">Lưu bài viết</button>
         <button id="selectThreadBtn" class="button">Chọn nhánh thảo luận</button>
       </div>
-      <p id="captureHint" class="hint">Với bài viết thường, extension chọn comment trên trang. Với Substack Note, extension tải danh sách reply rồi cho bạn chọn trong bảng bên dưới.</p>
+      <p id="captureHint" class="hint">Với Note, extension tải từng lượt comment và cho phép chọn nhiều nhánh trước khi thêm vào bài viết.</p>
     </section>
 
-    <section id="replyPickerCard" class="card hidden">
+    <section id="replyPickerCard" class="card hidden picker-card">
       <div class="card-heading row">
-        <div>
-          <p class="label">REPLY CỦA NOTE</p>
-          <h2>Chọn comment muốn lưu</h2>
-        </div>
+        <div><p class="label">COMMENT / REPLY CỦA NOTE</p><h2>Chọn nhiều nhánh để lưu</h2></div>
         <button id="closeReplyPickerBtn" class="icon-button" title="Đóng">×</button>
       </div>
       <p id="replyPickerSummary" class="hint reply-summary"></p>
       <div id="replyPicker" class="reply-picker"></div>
-      <p class="hint">Bấm một comment để lưu comment cha + comment đã chọn + toàn bộ reply con của nhánh đó. Việc này chỉ lưu vào thư viện, chưa xuất file.</p>
+      <button id="loadMoreRepliesBtn" class="button load-more hidden">Tải thêm comment</button>
+      <div class="picker-actionbar">
+        <div><strong id="selectedReplyCount">Đã chọn 0 nhánh</strong><span>Chưa lưu cho đến khi bấm nút bên cạnh.</span></div>
+        <div class="picker-actions">
+          <button id="clearReplySelectionBtn" class="button compact" disabled>Bỏ chọn</button>
+          <button id="addSelectedRepliesBtn" class="button primary compact" disabled>Thêm vào bài viết</button>
+        </div>
+      </div>
+      <p class="hint">Mỗi lượt chỉ tải một trang comment. Reply của comment đã tải có thể mở/đóng trong picker; chỉ bấm “Tải thêm comment” khi bạn muốn xem tiếp.</p>
     </section>
 
     <section class="card">
       <div class="card-heading row">
-        <div>
-          <p class="label">Thư viện nghiên cứu</p>
-          <h2>Nội dung đã lưu</h2>
-        </div>
+        <div><p class="label">Thư viện nghiên cứu</p><h2>Nội dung đã lưu</h2></div>
         <button id="refreshBtn" class="icon-button" title="Làm mới">↻</button>
       </div>
       <div id="library" class="library empty-state">Chưa có nội dung nào được lưu.</div>
     </section>
 
     <section id="exportCard" class="card hidden">
-      <div class="card-heading">
-        <p class="label">Xuất nội dung đã chọn</p>
-        <h2 id="exportTitle">Gói nghiên cứu</h2>
-      </div>
+      <div class="card-heading"><p class="label">Xuất nội dung đã chọn</p><h2 id="exportTitle">Gói nghiên cứu</h2></div>
       <div class="actions export-actions">
         <button id="exportMdBtn" class="button">Xuất Markdown</button>
         <button id="exportJsonBtn" class="button">Xuất JSON</button>
@@ -71,7 +66,7 @@
 
     <div id="status" class="status" role="status"></div>
   </main>
-
   <script type="module" src="sidepanel.js"></script>
+  <script type="module" src="note-multi-picker.js"></script>
 </body>
 </html>
