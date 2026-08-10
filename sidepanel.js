@@ -51,7 +51,7 @@ function isSubstackUrl(url = "") {
 }
 
 async function sendToPage(message) {
-  if (!state.tabId) throw new Error("No active Substack tab.");
+  if (!state.tabId) throw new Error("Không có tab Substack đang hoạt động.");
   return chrome.tabs.sendMessage(state.tabId, message);
 }
 
@@ -84,10 +84,10 @@ function renderCurrentStats() {
   const imageCount = item.article?.blocks?.filter((block) => block.type === "image").length || 0;
   const comments = (item.threads || []).reduce((total, thread) => total + (thread.comments?.length || 0), 0);
   els.currentStats.innerHTML = `
-    <span class="stat">${item.article ? "Article saved" : "Thread only"}</span>
-    <span class="stat">${item.threads?.length || 0} threads</span>
-    <span class="stat">${comments} comments</span>
-    <span class="stat">${imageCount} images</span>`;
+    <span class="stat">${item.article ? "Đã lưu bài viết" : "Chỉ có thảo luận"}</span>
+    <span class="stat">${item.threads?.length || 0} nhánh</span>
+    <span class="stat">${comments} bình luận</span>
+    <span class="stat">${imageCount} ảnh</span>`;
   els.currentStats.classList.remove("hidden");
 }
 
@@ -95,7 +95,7 @@ function renderLibrary() {
   const items = Object.values(state.items).sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
   if (!items.length) {
     els.library.className = "library empty-state";
-    els.library.textContent = "Nothing captured yet.";
+    els.library.textContent = "Chưa có nội dung nào được lưu.";
     els.exportCard.classList.add("hidden");
     renderCurrentStats();
     return;
@@ -109,8 +109,8 @@ function renderLibrary() {
     const comments = (item.threads || []).reduce((sum, thread) => sum + (thread.comments?.length || 0), 0);
     node.innerHTML = `
       <p class="library-title"></p>
-      <p class="library-meta">${item.threads?.length || 0} threads · ${comments} comments · ${item.article ? "article saved" : "thread only"}</p>`;
-    node.querySelector(".library-title").textContent = item.title || "Untitled research";
+      <p class="library-meta">${item.threads?.length || 0} nhánh · ${comments} bình luận · ${item.article ? "đã lưu bài viết" : "chỉ có thảo luận"}</p>`;
+    node.querySelector(".library-title").textContent = item.title || "Nghiên cứu chưa đặt tên";
     node.addEventListener("click", () => {
       state.selectedItemId = item.id;
       renderLibrary();
@@ -121,7 +121,7 @@ function renderLibrary() {
   const item = selectedItem() || items[0];
   if (!state.selectedItemId && item) state.selectedItemId = item.id;
   if (item) {
-    els.exportTitle.textContent = item.title || "Research package";
+    els.exportTitle.textContent = item.title || "Gói nghiên cứu";
     els.exportCard.classList.remove("hidden");
   }
   renderCurrentStats();
@@ -132,9 +132,9 @@ async function refreshPage() {
   state.tabId = tab?.id || null;
   if (!tab || !isSubstackUrl(tab.url || "")) {
     state.page = null;
-    els.currentTitle.textContent = "Open a Substack post";
+    els.currentTitle.textContent = "Mở một bài viết Substack";
     els.currentUrl.textContent = tab?.url || "—";
-    setConnected(false, "Not Substack");
+    setConnected(false, "Không phải Substack");
     els.saveArticleBtn.disabled = true;
     els.selectThreadBtn.disabled = true;
     renderCurrentStats();
@@ -143,36 +143,36 @@ async function refreshPage() {
 
   try {
     const response = await sendToPage({ type: "GET_PAGE_INFO" });
-    if (!response?.ok) throw new Error(response?.error || "Content script unavailable.");
+    if (!response?.ok) throw new Error(response?.error || "Extension chưa được nạp trên trang này.");
     state.page = response.page;
-    els.currentTitle.textContent = state.page.title || tab.title || "Substack post";
+    els.currentTitle.textContent = state.page.title || tab.title || "Bài viết Substack";
     els.currentUrl.textContent = state.page.canonicalUrl || tab.url;
-    setConnected(true, state.page.isCommentsPage ? "Discussion" : "Ready");
+    setConnected(true, state.page.isCommentsPage ? "Thảo luận" : "Sẵn sàng");
     els.saveArticleBtn.disabled = false;
     els.selectThreadBtn.disabled = false;
     const item = currentItem();
     if (item) state.selectedItemId = item.id;
     renderLibrary();
   } catch (error) {
-    setConnected(false, "Reload page");
+    setConnected(false, "Tải lại trang");
     els.saveArticleBtn.disabled = true;
     els.selectThreadBtn.disabled = true;
-    setStatus("Reload this Substack tab after installing the extension, then reopen the panel.", "error");
+    setStatus("Hãy tải lại tab Substack này sau khi cài extension, rồi mở lại bảng điều khiển.", "error");
   }
 }
 
 async function saveArticle() {
-  setStatus("Capturing article structure and image references…");
+  setStatus("Đang lưu cấu trúc bài viết và thông tin hình ảnh…");
   els.saveArticleBtn.disabled = true;
   try {
     const response = await sendToPage({ type: "CAPTURE_ARTICLE" });
-    if (!response?.ok) throw new Error(response?.error || "Article capture failed.");
+    if (!response?.ok) throw new Error(response?.error || "Không thể lưu bài viết.");
     const article = response.article;
     const id = researchItemId(article.canonicalUrl);
     state.items[id] = mergeArticle(state.items[id], article);
     state.selectedItemId = id;
     await saveItems();
-    setStatus(`Saved article: ${article.blocks.length} content blocks.`, "success");
+    setStatus(`Đã lưu bài viết (${article.blocks.length} khối nội dung) vào thư viện. Chưa xuất file.`, "success");
   } catch (error) {
     setStatus(error.message || String(error), "error");
   } finally {
@@ -181,11 +181,11 @@ async function saveArticle() {
 }
 
 async function selectThread() {
-  setStatus("Select a highlighted comment on the page. Press Esc to cancel.");
+  setStatus("Hãy chọn một comment đang được đánh dấu trên trang. Nhấn Esc để hủy.");
   try {
-    const response = await sendToPage({ type: "START_THREAD_SELECTION" });
-    if (!response?.ok) throw new Error(response?.error || "Could not enter selection mode.");
-    setStatus(`${response.count} visible comments detected. Click one on the page.`);
+    const response = await sendToPage({ type: "START_THREAD_SELECTION_V2" });
+    if (!response?.ok) throw new Error(response?.error || "Không thể bật chế độ chọn comment.");
+    setStatus(`Đã phát hiện ${response.count} comment đang hiển thị. Hãy bấm vào một comment trên trang.`);
   } catch (error) {
     setStatus(error.message || String(error), "error");
   }
@@ -207,7 +207,7 @@ function exportMarkdown() {
   if (!item) return;
   const filename = `${safeFilename(item.title)}.md`;
   downloadBlob(new Blob([toMarkdown(item)], { type: "text/markdown;charset=utf-8" }), filename);
-  setStatus(`Exported ${filename}.`, "success");
+  setStatus(`Đã xuất ${filename}.`, "success");
 }
 
 function exportJson() {
@@ -215,7 +215,7 @@ function exportJson() {
   if (!item) return;
   const filename = `${safeFilename(item.title)}.json`;
   downloadBlob(new Blob([toJson(item)], { type: "application/json;charset=utf-8" }), filename);
-  setStatus(`Exported ${filename}.`, "success");
+  setStatus(`Đã xuất ${filename}.`, "success");
 }
 
 function sniffExtension(contentType, fallbackName) {
@@ -235,7 +235,7 @@ async function exportZip() {
   const item = selectedItem();
   if (!item) return;
   els.exportZipBtn.disabled = true;
-  setStatus("Building ZIP and downloading article images…");
+  setStatus("Đang tạo gói ZIP và tải ảnh của bài viết…");
 
   try {
     const zip = new ZipWriter();
@@ -247,7 +247,7 @@ async function exportZip() {
 
     for (let index = 0; index < images.length; index += 1) {
       const image = images[index];
-      setStatus(`Downloading image ${index + 1}/${images.length}…`);
+      setStatus(`Đang tải ảnh ${index + 1}/${images.length}…`);
       try {
         const response = await fetch(image.src, { credentials: "omit", cache: "force-cache" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -258,7 +258,6 @@ async function exportZip() {
         const finalName = `${base}.${wantedExt}`;
         zip.addBytes(`assets/${finalName}`, bytes);
         if (finalName !== image.assetName) {
-          // Keep the declared path valid if content-type changed.
           zip.addBytes(`assets/${image.assetName}`, bytes);
         }
       } catch (error) {
@@ -267,13 +266,13 @@ async function exportZip() {
     }
 
     if (failures.length) {
-      zip.addText("assets/FAILED_ASSETS.txt", "Some remote images could not be downloaded. Original URLs:\n\n" + failures.join("\n") + "\n");
+      zip.addText("assets/FAILED_ASSETS.txt", "Không thể tải một số ảnh từ xa. URL gốc:\n\n" + failures.join("\n") + "\n");
     }
 
     const bytes = zip.build();
     const filename = `${safeFilename(item.title)}.zip`;
     downloadBlob(new Blob([bytes], { type: "application/zip" }), filename);
-    setStatus(`Exported ZIP: ${images.length - failures.length}/${images.length} images downloaded.`, failures.length ? "" : "success");
+    setStatus(`Đã xuất ZIP: tải được ${images.length - failures.length}/${images.length} ảnh.`, failures.length ? "" : "success");
   } catch (error) {
     setStatus(error.message || String(error), "error");
   } finally {
@@ -289,15 +288,15 @@ chrome.runtime.onMessage.addListener(async (message) => {
     state.items[id] = mergeThread(state.items[id], thread);
     state.selectedItemId = id;
     await saveItems();
-    setStatus(`Saved discussion context: ${thread.comments.length} comments.`, "success");
+    setStatus(`Đã lưu nhánh thảo luận (${thread.comments.length} bình luận) vào thư viện. Chưa xuất file.`, "success");
     return;
   }
   if (message?.type === "THREAD_CAPTURE_ERROR") {
-    setStatus(message.error || "Thread capture failed.", "error");
+    setStatus(message.error || "Không thể lưu nhánh thảo luận.", "error");
     return;
   }
   if (message?.type === "THREAD_SELECTION_CANCELLED") {
-    setStatus("Thread selection cancelled.");
+    setStatus("Đã hủy chọn nhánh thảo luận.");
   }
 });
 
