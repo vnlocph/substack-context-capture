@@ -1,9 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Substack Context Capture",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Lưu bài viết Substack và các nhánh thảo luận đã chọn thành gói nghiên cứu có cấu trúc.",
-  "permissions": ["storage", "sidePanel", "activeTab"],
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab"
+  ],
   "host_permissions": [
     "https://substack.com/*",
     "https://*.substack.com/*",
@@ -22,9 +26,17 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://substack.com/*", "https://*.substack.com/*"],
-      "js": ["content.js", "content-comments.js"],
-      "css": ["content.css"],
+      "matches": [
+        "https://substack.com/*",
+        "https://*.substack.com/*"
+      ],
+      "js": [
+        "content.js",
+        "content-comments.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_idle"
     }
   ]
