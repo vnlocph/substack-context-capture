@@ -24,14 +24,43 @@ test("normalizes commentBranches and descendantComments", () => {
   ]);
 });
 
-test("builds ancestors + selected + descendants only", () => {
+test("handles ancestor_path that includes the current comment id", () => {
+  const comments = normalizeNoteReplyPayload({
+    commentBranches: [{
+      comment: { id: 10, body: "Root" },
+      descendantComments: [
+        { id: 11, body: "Child", ancestor_path: ".10.11." },
+        { id: 12, body: "Grand child", ancestor_path: ".10.11.12." }
+      ]
+    }]
+  });
+  assert.deepEqual(comments.map((c) => [c.id, c.parentId, c.depth]), [
+    ["10", null, 0],
+    ["11", "10", 1],
+    ["12", "11", 2]
+  ]);
+});
+
+test("selecting a parent keeps the whole loaded subtree", () => {
   const comments = [
     { id: "10", parentId: null, depth: 0, text: "A" },
     { id: "11", parentId: "10", depth: 1, text: "B" },
     { id: "12", parentId: "11", depth: 2, text: "C" },
-    { id: "13", parentId: "10", depth: 1, text: "Sibling" }
+    { id: "13", parentId: "10", depth: 1, text: "D" }
+  ];
+  const thread = buildNoteThread(comments, "10", "https://substack.com/@x/note/c-1");
+  assert.deepEqual(thread.comments.map((c) => c.id), ["10", "11", "12", "13"]);
+});
+
+test("selecting a child keeps all ancestors and only that child's subtree", () => {
+  const comments = [
+    { id: "10", parentId: null, depth: 0, text: "A" },
+    { id: "11", parentId: "10", depth: 1, text: "B" },
+    { id: "12", parentId: "11", depth: 2, text: "C" },
+    { id: "13", parentId: "10", depth: 1, text: "Sibling" },
+    { id: "14", parentId: "12", depth: 3, text: "D" }
   ];
   const thread = buildNoteThread(comments, "11", "https://substack.com/@x/note/c-1");
-  assert.deepEqual(thread.comments.map((c) => c.id), ["10", "11", "12"]);
+  assert.deepEqual(thread.comments.map((c) => c.id), ["10", "11", "12", "14"]);
   assert.equal(thread.comments.find((c) => c.id === "11").selected, true);
 });
