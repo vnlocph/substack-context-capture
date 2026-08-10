@@ -29,7 +29,20 @@
         <button id="saveArticleBtn" class="button primary">Lưu bài viết</button>
         <button id="selectThreadBtn" class="button">Chọn nhánh thảo luận</button>
       </div>
-      <p class="hint">Khi lưu nhánh thảo luận, extension giữ các comment cha, comment bạn chọn và toàn bộ reply đang hiển thị bên dưới.</p>
+      <p id="captureHint" class="hint">Với bài viết thường, extension chọn comment trên trang. Với Substack Note, extension tải danh sách reply rồi cho bạn chọn trong bảng bên dưới.</p>
+    </section>
+
+    <section id="replyPickerCard" class="card hidden">
+      <div class="card-heading row">
+        <div>
+          <p class="label">REPLY CỦA NOTE</p>
+          <h2>Chọn comment muốn lưu</h2>
+        </div>
+        <button id="closeReplyPickerBtn" class="icon-button" title="Đóng">×</button>
+      </div>
+      <p id="replyPickerSummary" class="hint reply-summary"></p>
+      <div id="replyPicker" class="reply-picker"></div>
+      <p class="hint">Bấm một comment để lưu comment cha + comment đã chọn + toàn bộ reply con của nhánh đó. Việc này chỉ lưu vào thư viện, chưa xuất file.</p>
     </section>
 
     <section class="card">
@@ -53,7 +66,7 @@
         <button id="exportJsonBtn" class="button">Xuất JSON</button>
         <button id="exportZipBtn" class="button primary">Xuất ZIP</button>
       </div>
-      <p class="hint">Gói ZIP chứa <code>research.md</code>, <code>research.json</code> và các ảnh của bài viết được tải vào thư mục <code>assets/</code>.</p>
+      <p class="hint">Chỉ khi bấm một trong ba nút trên thì extension mới tải file xuống máy.</p>
     </section>
 
     <div id="status" class="status" role="status"></div>
