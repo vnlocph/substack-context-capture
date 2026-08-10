@@ -1,6 +1,6 @@
 {
   "name": "substack-context-capture",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Chrome extension for capturing Substack articles and selected discussion threads as structured research packages.",
