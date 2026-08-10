@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Substack Context Capture</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">RESEARCH CAPTURE</p>
+        <h1>Substack Context</h1>
+      </div>
+      <span id="connectionBadge" class="badge muted">Checking…</span>
+    </header>
+
+    <section class="card current-card">
+      <div class="card-heading">
+        <div>
+          <p class="label">Current page</p>
+          <h2 id="currentTitle">Open a Substack post</h2>
+        </div>
+      </div>
+      <p id="currentUrl" class="url">—</p>
+      <div id="currentStats" class="stats hidden"></div>
+      <div class="actions primary-actions">
+        <button id="saveArticleBtn" class="button primary">Save article</button>
+        <button id="selectThreadBtn" class="button">Select discussion thread</button>
+      </div>
+      <p class="hint">Thread capture keeps ancestors, the selected comment, and all visible descendants.</p>
+    </section>
+
+    <section class="card">
+      <div class="card-heading row">
+        <div>
+          <p class="label">Research library</p>
+          <h2>Saved items</h2>
+        </div>
+        <button id="refreshBtn" class="icon-button" title="Refresh">↻</button>
+      </div>
+      <div id="library" class="library empty-state">Nothing captured yet.</div>
+    </section>
+
+    <section id="exportCard" class="card hidden">
+      <div class="card-heading">
+        <p class="label">Export selected item</p>
+        <h2 id="exportTitle">Research package</h2>
+      </div>
+      <div class="actions export-actions">
+        <button id="exportMdBtn" class="button">Markdown</button>
+        <button id="exportJsonBtn" class="button">JSON</button>
+        <button id="exportZipBtn" class="button primary">ZIP package</button>
+      </div>
+      <p class="hint">ZIP contains <code>research.md</code>, <code>research.json</code>, and downloaded article images under <code>assets/</code>.</p>
+    </section>
+
+    <div id="status" class="status" role="status"></div>
+  </main>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>
