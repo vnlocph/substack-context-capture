@@ -1,6 +1,7 @@
 import { researchItemId, mergeArticle, mergeThread, normalizeArticleUrl } from "./lib/model.js";
 import { toMarkdown, toJson, safeFilename } from "./lib/exporters.js";
 import { ZipWriter } from "./lib/zip.js";
+import { noteIdFromUrl, normalizeNoteReplyPayload, buildNoteThread } from "./lib/note-replies.js";
 
 const els = {
   connectionBadge: document.getElementById("connectionBadge"),
@@ -9,6 +10,11 @@ const els = {
   currentStats: document.getElementById("currentStats"),
   saveArticleBtn: document.getElementById("saveArticleBtn"),
   selectThreadBtn: document.getElementById("selectThreadBtn"),
+  captureHint: document.getElementById("captureHint"),
+  replyPickerCard: document.getElementById("replyPickerCard"),
+  replyPickerSummary: document.getElementById("replyPickerSummary"),
+  replyPicker: document.getElementById("replyPicker"),
+  closeReplyPickerBtn: document.getElementById("closeReplyPickerBtn"),
   refreshBtn: document.getElementById("refreshBtn"),
   library: document.getElementById("library"),
   exportCard: document.getElementById("exportCard"),
@@ -23,7 +29,9 @@ const state = {
   tabId: null,
   page: null,
   items: {},
-  selectedItemId: null
+  selectedItemId: null,
+  noteId: null,
+  noteReplies: []
 };
 
 function setStatus(message, kind = "") {
@@ -127,9 +135,55 @@ function renderLibrary() {
   renderCurrentStats();
 }
 
+function hideReplyPicker() {
+  state.noteReplies = [];
+  state.noteId = null;
+  els.replyPicker.innerHTML = "";
+  els.replyPickerCard.classList.add("hidden");
+}
+
+function formatReplyText(text = "") {
+  const clean = String(text).replace(/\s+/g, " ").trim();
+  if (!clean) return "(Comment không có nội dung chữ)";
+  return clean.length > 260 ? `${clean.slice(0, 257)}…` : clean;
+}
+
+function renderReplyPicker(noteId, comments) {
+  state.noteId = noteId;
+  state.noteReplies = comments;
+  els.replyPicker.innerHTML = "";
+  els.replyPickerSummary.textContent = `Đã tải ${comments.length} reply từ Note #${noteId}. Chọn một comment bên dưới.`;
+
+  comments.forEach((comment) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "reply-item";
+    button.style.marginLeft = `${Math.min(Number(comment.depth) || 0, 4) * 14}px`;
+    button.style.width = `calc(100% - ${Math.min(Number(comment.depth) || 0, 4) * 14}px)`;
+
+    const author = document.createElement("span");
+    author.className = "reply-item-author";
+    author.textContent = comment.author || "Người dùng Substack";
+    const text = document.createElement("span");
+    text.className = "reply-item-text";
+    text.textContent = formatReplyText(comment.text);
+    const meta = document.createElement("span");
+    meta.className = "reply-item-meta";
+    meta.textContent = `${comment.depth > 0 ? `Reply cấp ${comment.depth}` : "Comment gốc"} · ID ${comment.id}`;
+
+    button.append(author, text, meta);
+    button.addEventListener("click", () => saveSelectedNoteReply(comment.id));
+    els.replyPicker.appendChild(button);
+  });
+
+  els.replyPickerCard.classList.remove("hidden");
+}
+
 async function refreshPage() {
   const tab = await activeTab();
   state.tabId = tab?.id || null;
+  hideReplyPicker();
+
   if (!tab || !isSubstackUrl(tab.url || "")) {
     state.page = null;
     els.currentTitle.textContent = "Mở một bài viết Substack";
@@ -145,9 +199,13 @@ async function refreshPage() {
     const response = await sendToPage({ type: "GET_PAGE_INFO" });
     if (!response?.ok) throw new Error(response?.error || "Extension chưa được nạp trên trang này.");
     state.page = response.page;
+    const noteId = noteIdFromUrl(state.page.canonicalUrl || tab.url);
     els.currentTitle.textContent = state.page.title || tab.title || "Bài viết Substack";
     els.currentUrl.textContent = state.page.canonicalUrl || tab.url;
-    setConnected(true, state.page.isCommentsPage ? "Thảo luận" : "Sẵn sàng");
+    setConnected(true, noteId ? "Note" : (state.page.isCommentsPage ? "Thảo luận" : "Sẵn sàng"));
+    els.captureHint.textContent = noteId
+      ? "Đây là Substack Note. Khi bấm Chọn nhánh thảo luận, extension sẽ tải cây reply trực tiếp rồi cho bạn chọn comment — không cần mở icon bình luận trước."
+      : "Extension sẽ đánh dấu comment đang hiển thị trên trang để bạn chọn nhánh cần lưu.";
     els.saveArticleBtn.disabled = false;
     els.selectThreadBtn.disabled = false;
     const item = currentItem();
@@ -180,7 +238,88 @@ async function saveArticle() {
   }
 }
 
+async function fetchNoteReplies(noteId) {
+  const all = [];
+  let cursor = null;
+  let pages = 0;
+
+  while (pages < 25) {
+    const url = new URL(`https://substack.com/api/v1/reader/comment/${noteId}/replies`);
+    if (cursor) url.searchParams.set("cursor", cursor);
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) throw new Error(`Substack trả về HTTP ${response.status} khi tải reply.`);
+    const data = await response.json();
+    all.push(...normalizeNoteReplyPayload(data));
+    pages += 1;
+    const nextCursor = data?.nextCursor;
+    const hasBranches = Array.isArray(data?.commentBranches) && data.commentBranches.length > 0;
+    if (!nextCursor || !hasBranches) break;
+    cursor = String(nextCursor);
+  }
+
+  const seen = new Set();
+  return all.filter((comment) => {
+    if (!comment.id || seen.has(comment.id)) return false;
+    seen.add(comment.id);
+    return true;
+  });
+}
+
+async function loadNoteReplyPicker(noteId) {
+  els.selectThreadBtn.disabled = true;
+  setStatus("Đang tải cây reply của Note từ Substack…");
+  try {
+    const comments = await fetchNoteReplies(noteId);
+    if (!comments.length) {
+      hideReplyPicker();
+      setStatus("Note này hiện không có reply nào có thể tải được.", "error");
+      return;
+    }
+    renderReplyPicker(noteId, comments);
+    setStatus(`Đã tải ${comments.length} reply. Hãy chọn comment muốn lưu ở bảng bên dưới.`, "success");
+  } catch (error) {
+    hideReplyPicker();
+    setStatus(`Không tải được reply trực tiếp: ${error.message || error} Tôi sẽ thử chế độ chọn trên trang.`, "error");
+    try {
+      const response = await sendToPage({ type: "START_THREAD_SELECTION_V2" });
+      if (!response?.ok) throw new Error(response?.error || "Không thể bật chế độ chọn comment trên trang.");
+      setStatus(`Fallback: đã phát hiện ${response.count} comment đang hiển thị. Hãy bấm vào một comment trên trang.`);
+    } catch (fallbackError) {
+      setStatus(`Không tải được reply của Note và trang cũng chưa render comment. Chi tiết: ${fallbackError.message || fallbackError}`, "error");
+    }
+  } finally {
+    els.selectThreadBtn.disabled = false;
+  }
+}
+
+async function saveSelectedNoteReply(commentId) {
+  if (!state.noteReplies.length || !state.page?.canonicalUrl) return;
+  try {
+    const thread = buildNoteThread(state.noteReplies, commentId, state.page.canonicalUrl);
+    const canonicalUrl = normalizeArticleUrl(thread.articleUrl);
+    const id = researchItemId(canonicalUrl);
+    state.items[id] = mergeThread(state.items[id], thread);
+    state.selectedItemId = id;
+    await saveItems();
+    setStatus(`Đã lưu nhánh này (${thread.comments.length} comment) vào thư viện. Chưa xuất file.`, "success");
+    hideReplyPicker();
+  } catch (error) {
+    setStatus(error.message || String(error), "error");
+  }
+}
+
 async function selectThread() {
+  const noteId = noteIdFromUrl(state.page?.canonicalUrl || state.page?.url || "");
+  if (noteId) {
+    await loadNoteReplyPicker(noteId);
+    return;
+  }
+
   setStatus("Hãy chọn một comment đang được đánh dấu trên trang. Nhấn Esc để hủy.");
   try {
     const response = await sendToPage({ type: "START_THREAD_SELECTION_V2" });
@@ -257,9 +396,7 @@ async function exportZip() {
         const base = image.assetName.replace(/\.[^.]+$/, "");
         const finalName = `${base}.${wantedExt}`;
         zip.addBytes(`assets/${finalName}`, bytes);
-        if (finalName !== image.assetName) {
-          zip.addBytes(`assets/${image.assetName}`, bytes);
-        }
+        if (finalName !== image.assetName) zip.addBytes(`assets/${image.assetName}`, bytes);
       } catch (error) {
         failures.push(`${image.assetName}\t${image.src}\t${error.message || error}`);
       }
@@ -302,6 +439,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
 els.saveArticleBtn.addEventListener("click", saveArticle);
 els.selectThreadBtn.addEventListener("click", selectThread);
+els.closeReplyPickerBtn.addEventListener("click", hideReplyPicker);
 els.refreshBtn.addEventListener("click", async () => { await loadItems(); await refreshPage(); });
 els.exportMdBtn.addEventListener("click", exportMarkdown);
 els.exportJsonBtn.addEventListener("click", exportJson);
