@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Substack Context Capture",
+  "version": "0.1.0",
+  "description": "Capture Substack articles and selected discussion threads as structured research packages.",
+  "permissions": ["storage", "sidePanel", "activeTab"],
+  "host_permissions": [
+    "https://substack.com/*",
+    "https://*.substack.com/*",
+    "https://*.substackcdn.com/*",
+    "https://substack-post-media.s3.amazonaws.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Substack Context Capture"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://substack.com/*", "https://*.substack.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
