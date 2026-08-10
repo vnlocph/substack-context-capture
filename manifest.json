@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Substack Context Capture",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Lưu bài viết Substack và các nhánh thảo luận đã chọn thành gói nghiên cứu có cấu trúc.",
   "permissions": [
     "storage",
