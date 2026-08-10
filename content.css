@@ -1,0 +1,25 @@
+.sr-capture-candidate {
+  outline: 2px dashed rgba(26, 115, 232, 0.45) !important;
+  outline-offset: 3px !important;
+  cursor: crosshair !important;
+}
+
+.sr-capture-hover {
+  outline: 3px solid rgba(26, 115, 232, 0.95) !important;
+  outline-offset: 4px !important;
+  background: rgba(26, 115, 232, 0.045) !important;
+}
+
+#sr-capture-toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483647;
+  max-width: 360px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #111827;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
