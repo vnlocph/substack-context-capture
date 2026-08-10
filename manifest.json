@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Substack Context Capture",
-  "version": "0.1.0",
-  "description": "Capture Substack articles and selected discussion threads as structured research packages.",
+  "version": "0.1.1",
+  "description": "Lưu bài viết Substack và các nhánh thảo luận đã chọn thành gói nghiên cứu có cấu trúc.",
   "permissions": ["storage", "sidePanel", "activeTab"],
   "host_permissions": [
     "https://substack.com/*",
@@ -15,7 +15,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Open Substack Context Capture"
+    "default_title": "Mở Substack Context Capture"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
@@ -23,7 +23,7 @@
   "content_scripts": [
     {
       "matches": ["https://substack.com/*", "https://*.substack.com/*"],
-      "js": ["content.js"],
+      "js": ["content.js", "content-comments.js"],
       "css": ["content.css"],
       "run_at": "document_idle"
     }
