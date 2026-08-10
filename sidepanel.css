@@ -49,3 +49,11 @@ button, input { font: inherit; }
 .status.success { color: #257347; }
 .hidden { display: none !important; }
 code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; }
+
+.reply-summary { margin-bottom: 10px; }
+.reply-picker { display: grid; gap: 7px; max-height: 360px; overflow: auto; padding-right: 2px; }
+.reply-item { width: 100%; text-align: left; border: 1px solid #e4e7ec; border-radius: 9px; background: #fff; padding: 9px 10px; cursor: pointer; }
+.reply-item:hover { border-color: #aeb4bf; background: #f8f9fb; }
+.reply-item-author { display: block; font-size: 11px; font-weight: 800; color: #262a31; margin-bottom: 4px; }
+.reply-item-text { display: block; font-size: 11px; line-height: 1.45; color: #59606b; white-space: normal; overflow-wrap: anywhere; }
+.reply-item-meta { display: block; margin-top: 5px; font-size: 9px; color: #9399a3; }
