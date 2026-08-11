@@ -1,0 +1,22 @@
+.multi-reply-branch { border: 1px solid #e7e9ee; border-radius: 11px; padding: 7px; background: #fbfbfc; }
+.multi-reply-branch + .multi-reply-branch { margin-top: 8px; }
+.multi-reply-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px; border-radius: 8px; }
+.multi-reply-item:hover { background: #f3f5f7; }
+.multi-reply-item.selected { background: #eef7f1; box-shadow: inset 0 0 0 1px #b8ddc5; }
+.multi-reply-item.nested { border-left: 2px solid #e2e5ea; border-radius: 0 8px 8px 0; }
+.multi-reply-check { flex: 0 0 26px; width: 26px; height: 26px; border-radius: 7px; border: 1px solid #cfd3db; background: #fff; cursor: pointer; font-weight: 900; }
+.multi-reply-item.selected .multi-reply-check { background: #257347; color: #fff; border-color: #257347; }
+.multi-reply-body { min-width: 0; flex: 1; }
+.multi-reply-body strong, .multi-reply-body span, .multi-reply-body small { display: block; }
+.multi-reply-body strong { font-size: 11px; margin-bottom: 4px; }
+.multi-reply-body span { font-size: 11px; line-height: 1.45; color: #59606b; overflow-wrap: anywhere; }
+.multi-reply-body small { margin-top: 5px; font-size: 9px; color: #9399a3; }
+.multi-reply-expand { margin: 1px 7px 6px 41px; border: 0; background: transparent; color: #525a66; cursor: pointer; font-size: 10px; font-weight: 700; padding: 3px 0; }
+.multi-reply-expand:hover { text-decoration: underline; }
+.multi-reply-children { display: grid; gap: 2px; }
+#loadMoreRepliesBtn { width: 100%; margin-top: 9px; }
+.picker-actionbar { position: sticky; bottom: 0; z-index: 3; margin: 10px -4px -2px; padding: 10px; border: 1px solid #e0e3e8; border-radius: 11px; background: rgba(255,255,255,.97); box-shadow: 0 -4px 14px rgba(16,24,40,.06); display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.picker-actionbar strong { display: block; font-size: 11px; }
+.picker-actionbar span { display: block; margin-top: 2px; color: #858b95; font-size: 9px; }
+.picker-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+.button.compact { padding: 7px 9px; font-size: 10px; }

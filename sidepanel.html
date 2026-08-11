@@ -3,75 +3,68 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Substack Context Capture</title>
+  <title>Research Context Capture</title>
   <link rel="stylesheet" href="sidepanel.css" />
+  <link rel="stylesheet" href="note-multi-picker.css" />
 </head>
 <body>
   <main class="app">
     <header class="hero">
-      <div>
-        <p class="eyebrow">THU THẬP NGHIÊN CỨU</p>
-        <h1>Substack Context</h1>
-      </div>
+      <div><p class="eyebrow">THU THẬP NGỮ CẢNH</p><h1>Research Context</h1></div>
       <span id="connectionBadge" class="badge muted">Đang kiểm tra…</span>
     </header>
 
     <section class="card current-card">
-      <div class="card-heading">
-        <div>
-          <p class="label">Trang hiện tại</p>
-          <h2 id="currentTitle">Mở một bài viết Substack</h2>
-        </div>
-      </div>
+      <div class="card-heading"><div><p class="label">Nguồn hiện tại</p><h2 id="currentTitle">Mở một post X hoặc bài Substack</h2></div></div>
       <p id="currentUrl" class="url">—</p>
       <div id="currentStats" class="stats hidden"></div>
       <div class="actions primary-actions">
-        <button id="saveArticleBtn" class="button primary">Lưu bài viết</button>
+        <button id="saveArticleBtn" class="button primary">Lưu nội dung</button>
         <button id="selectThreadBtn" class="button">Chọn nhánh thảo luận</button>
       </div>
-      <p id="captureHint" class="hint">Với bài viết thường, extension chọn comment trên trang. Với Substack Note, extension tải danh sách reply rồi cho bạn chọn trong bảng bên dưới.</p>
+      <p id="captureHint" class="hint">X là nguồn ưu tiên; Substack vẫn được hỗ trợ như nguồn phụ.</p>
     </section>
 
-    <section id="replyPickerCard" class="card hidden">
+    <section id="replyPickerCard" class="card hidden picker-card">
       <div class="card-heading row">
-        <div>
-          <p class="label">REPLY CỦA NOTE</p>
-          <h2>Chọn comment muốn lưu</h2>
-        </div>
+        <div><p class="label">THẢO LUẬN</p><h2>Chọn nhiều nội dung để lưu</h2></div>
         <button id="closeReplyPickerBtn" class="icon-button" title="Đóng">×</button>
       </div>
       <p id="replyPickerSummary" class="hint reply-summary"></p>
       <div id="replyPicker" class="reply-picker"></div>
-      <p class="hint">Bấm một comment để lưu comment cha + comment đã chọn + toàn bộ reply con của nhánh đó. Việc này chỉ lưu vào thư viện, chưa xuất file.</p>
+      <button id="loadMoreRepliesBtn" class="button load-more hidden">Tải thêm</button>
+      <div class="picker-actionbar">
+        <div><strong id="selectedReplyCount">Đã chọn 0</strong><span>Chưa lưu cho đến khi bấm nút bên cạnh.</span></div>
+        <div class="picker-actions">
+          <button id="clearReplySelectionBtn" class="button compact" disabled>Bỏ chọn</button>
+          <button id="addSelectedRepliesBtn" class="button primary compact" disabled>Thêm vào bài viết</button>
+        </div>
+      </div>
+      <p class="hint">Chỉ lưu vào Research Library khi bạn bấm “Thêm vào bài viết”. Không tự xuất file.</p>
     </section>
 
     <section class="card">
       <div class="card-heading row">
-        <div>
-          <p class="label">Thư viện nghiên cứu</p>
-          <h2>Nội dung đã lưu</h2>
-        </div>
+        <div><p class="label">RESEARCH LIBRARY</p><h2>Nội dung đã lưu</h2></div>
         <button id="refreshBtn" class="icon-button" title="Làm mới">↻</button>
       </div>
       <div id="library" class="library empty-state">Chưa có nội dung nào được lưu.</div>
     </section>
 
     <section id="exportCard" class="card hidden">
-      <div class="card-heading">
-        <p class="label">Xuất nội dung đã chọn</p>
-        <h2 id="exportTitle">Gói nghiên cứu</h2>
-      </div>
+      <div class="card-heading"><p class="label">XUẤT NỘI DUNG ĐÃ CHỌN</p><h2 id="exportTitle">Gói nghiên cứu</h2></div>
       <div class="actions export-actions">
         <button id="exportMdBtn" class="button">Xuất Markdown</button>
         <button id="exportJsonBtn" class="button">Xuất JSON</button>
         <button id="exportZipBtn" class="button primary">Xuất ZIP</button>
       </div>
-      <p class="hint">Chỉ khi bấm một trong ba nút trên thì extension mới tải file xuống máy.</p>
+      <p class="hint">Chỉ khi bấm nút xuất thì extension mới tải file xuống máy.</p>
     </section>
 
     <div id="status" class="status" role="status"></div>
   </main>
-
   <script type="module" src="sidepanel.js"></script>
+  <script type="module" src="note-multi-picker.js"></script>
+  <script type="module" src="x-multi-picker.js"></script>
 </body>
 </html>
