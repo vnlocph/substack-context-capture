@@ -1,42 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "Substack Context Capture",
-  "version": "0.1.3",
-  "description": "Lưu bài viết Substack và các nhánh thảo luận đã chọn thành gói nghiên cứu có cấu trúc.",
-  "permissions": [
-    "storage",
-    "sidePanel",
-    "activeTab"
-  ],
+  "name": "Research Context Capture",
+  "version": "0.2.0",
+  "description": "Lưu nội dung và các nhánh thảo luận đã chọn từ X và Substack thành gói nghiên cứu có cấu trúc.",
+  "permissions": ["storage", "sidePanel", "activeTab"],
   "host_permissions": [
+    "https://x.com/*",
+    "https://*.x.com/*",
     "https://substack.com/*",
     "https://*.substack.com/*",
     "https://*.substackcdn.com/*",
-    "https://substack-post-media.s3.amazonaws.com/*"
+    "https://substack-post-media.s3.amazonaws.com/*",
+    "https://pbs.twimg.com/*",
+    "https://video.twimg.com/*"
   ],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "action": {
-    "default_title": "Mở Substack Context Capture"
-  },
-  "side_panel": {
-    "default_path": "sidepanel.html"
-  },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Mở Research Context Capture" },
+  "side_panel": { "default_path": "sidepanel.html" },
   "content_scripts": [
     {
-      "matches": [
-        "https://substack.com/*",
-        "https://*.substack.com/*"
-      ],
-      "js": [
-        "content.js",
-        "content-comments.js"
-      ],
-      "css": [
-        "content.css"
-      ],
+      "matches": ["https://substack.com/*", "https://*.substack.com/*"],
+      "js": ["content.js", "content-comments.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://x.com/*", "https://*.x.com/*"],
+      "js": ["x-capture.js"],
       "run_at": "document_idle"
     }
   ]
